@@ -15,7 +15,12 @@ module.exports = {
 					email,
 				});
 				await user.save();
-				res.json(user);
+				res.json({
+					id : user._id,
+					firstName : user.firstName,
+					lastName : user.lastName,
+					email : user.email
+				});
 			} else res.status(400).json({ message: "user already exist" });
 		} catch (error) {
 			throw Error(`Error while regestering user: ${error}`);

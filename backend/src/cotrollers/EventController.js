@@ -1,57 +1,39 @@
 const Event = require("../models/Event");
 const User = require("../models/User");
+const jwt = require('jsonwebtoken')
 
 module.exports = {
 	// Create a Event
-	async createEvent(req, res) {
-		const { title, description, price, sport, thumbnail } = req.body;
-		const { user_id } = req.headers;
-		const { filename } = req.file;
+	createEvent(req, res) {
+		jwt.verify(req.token,'secret', async (err,authData)=>{
+			if (err) {
+				res.sendStatus(401);
+			} else {
+				const { title, description, price, sport, date, thumbnail } = req.body;
+				const  user_id  = authData._id;
+				const { filename } = req.file;
 
-		const user = await User.findById(user_id);
+				const user = await User.findById(user_id);
 
-		if (!user) {
-			return res.status(400).json({ message: "user does not exist" });
-		}
-		const event = await Event.create({
-			title,
-			description,
-			price,
-			sport,
-			user: user_id,
-			thumbnail: filename,
-		});
-		res.json(event);
+				if (!user) {
+					return res.status(400).json({ message: "user does not exist" });
+				}
+				const event = await Event.create({
+					title,
+					description,
+					price,
+					sport,
+					date,
+					user: user_id,
+					thumbnail: filename,
+				});
+				res.json(event);
+			}
+		})
 	},
 
-	// Get All Events
-	// async getAllEvents(req, res) {
-	// 	try {
-	// 		const events = await Event.find({});
-
-	// 		if (events) {
-	// 			return res.json(events);
-	// 		}
-	// 	} catch (error) {
-	// 		return res.status(400).json({ message: "We dont have any events yet!" });
-	// 	}
-	// },
-
-	// async getEventById(req, res) {
-	// 	const { eventId } = req.params;
-	// 	try {
-	// 		const event = await Event.findById(eventId);
-
-	// 		if (event) {
-	// 			return res.json(event);
-	// 		}
-	// 	} catch (error) {
-	// 		return res.status(400).json({ message: "EventId does not exist!" });
-	// 	}
-	// },
-
 	async delete(req, res) {
-		const { eventId } = req.body;
+		const { eventId } = req.params;
 		try {
 			await Event.findByIdAndDelete(eventId);
 
